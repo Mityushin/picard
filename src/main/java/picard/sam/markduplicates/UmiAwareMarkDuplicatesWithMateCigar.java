@@ -33,8 +33,11 @@ import org.broadinstitute.barclay.argparser.Argument;
 import org.broadinstitute.barclay.argparser.CommandLineProgramProperties;
 import org.broadinstitute.barclay.help.DocumentedFeature;
 import picard.cmdline.programgroups.ReadDataManipulationProgramGroup;
+import picard.sam.markduplicates.util.LibraryIdGenerator;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -128,7 +131,7 @@ public class UmiAwareMarkDuplicatesWithMateCigar extends SimpleMarkDuplicatesWit
     public boolean ALLOW_MISSING_UMIS = false;
 
     private final Log log = Log.getInstance(UmiAwareMarkDuplicatesWithMateCigar.class);
-    private UmiMetrics metrics = new UmiMetrics();
+    private Map<String, UmiMetrics> metrics = new HashMap<>();
 
     @Override
     protected int doWork() {
@@ -140,7 +143,11 @@ public class UmiAwareMarkDuplicatesWithMateCigar extends SimpleMarkDuplicatesWit
 
         // Write metrics specific to UMIs
         MetricsFile<UmiMetrics, Double> metricsFile = getMetricsFile();
-        metricsFile.addMetric(metrics);
+
+        for (Map.Entry<String, UmiMetrics> metric : metrics.entrySet()) {
+            metricsFile.addMetric(metric.getValue());
+        }
+
         metricsFile.write(UMI_METRICS_FILE);
         return retval;
     }
